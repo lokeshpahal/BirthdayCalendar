@@ -4,14 +4,15 @@ import 'package:birthday_calendar/BLoC/bloc.dart';
 import 'package:birthday_calendar/model/user_birthday.dart';
 import 'package:birthday_calendar/service/notification_service.dart';
 import 'package:birthday_calendar/service/shared_prefs.dart';
+import 'package:flutter/material.dart';
 
 import 'BirthdayEvent.dart';
 
 class BirthdayBloc implements Bloc {
   late UserBirthday _userBirthday;
+  int _indexOfPersonInList = 0;
 
   final _birthdayController = StreamController<UserBirthday>();
-
 
   StreamSink<UserBirthday> get _inBirthday => _birthdayController.sink;
   Stream<UserBirthday> get birthdayStream => _birthdayController.stream;
@@ -20,19 +21,28 @@ class BirthdayBloc implements Bloc {
 
   Sink<BirthdayEvent> get birthdayEventSink => _birthdayEventController.sink;
 
-  BirthdayBloc(UserBirthday birthday) {
+  BirthdayBloc(UserBirthday birthday, int index) {
     _userBirthday = birthday;
+    _indexOfPersonInList = index;
     _birthdayEventController.stream.listen(_mapEventToState);
   }
 
   void _mapEventToState(BirthdayEvent event) {
     if (event is GetBackgroundColor) {
-
+      _getColorBasedOnPosition(_indexOfPersonInList, event.elementName);
     } else if (event is UpdateNotificationStatus) {
       _handleNotificationStatusForUser();
     }
 
-    _inBirthday.add(_userBirthday)
+    _inBirthday.add(_userBirthday);
+  }
+
+  Color _getColorBasedOnPosition(int index, String element) {
+    if (element == "background") {
+      return index % 2 == 0 ? Colors.indigoAccent : Colors.white24;
+    }
+
+    return index % 2 == 0 ? Colors.white : Colors.black;
   }
 
   void _handleNotificationStatusForUser() {
